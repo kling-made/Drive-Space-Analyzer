@@ -1,0 +1,67 @@
+name: Build, test and release Windows app
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Find installer compiler
+        shell: pwsh
+        run: |
+          if (!(Test-Path "${env:ProgramFiles(x86)}/Inno Setup 6/ISCC.exe")) {
+            choco install innosetup --no-progress -y
+            if ($LASTEXITCODE -ne 0) { throw 'Could not install Inno Setup.' }
+          }
+      - name: Build, run core and WPF tests, publish and package
+        shell: pwsh
+        env:
+          DSA_SCREENSHOT_DIR: ${{ github.workspace }}/artifacts/screenshots
+        run: |
+          $version = '1.0.0'
+          if ($env:GITHUB_REF -like 'refs/tags/v*') { $version = $env:GITHUB_REF_NAME.Substring(1) }
+          ./scripts/Publish.ps1 -Version $version
+      - name: Install, launch and uninstall smoke test
+        shell: pwsh
+        run: ./scripts/SmokeTest-Installer.ps1 -Installer (Get-ChildItem artifacts/installer/*.exe | Select-Object -First 1).FullName
+      - uses: actions/upload-artifact@v4
+        with:
+          name: DriveSpaceAnalyzer-windows-x64
+          path: |
+            artifacts/installer/*.exe
+            artifacts/*.zip
+            artifacts/SHA256SUMS.txt
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: WPF-screenshots
+          path: artifacts/screenshots/*.png
+          if-no-files-found: ignore
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: windows
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: DriveSpaceAnalyzer-windows-x64
+          path: release
+      - name: Publish verified release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" --verify-tag --title "Drive Space Analyzer ${GITHUB_REF_NAME#v}" --notes-file docs/RELEASE_NOTES.md release/installer/*.exe release/*.zip release/SHA256SUMS.txt

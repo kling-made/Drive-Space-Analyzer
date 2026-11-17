@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>DriveSpaceAnalyzer</AssemblyName>
+    <RootNamespace>DriveSpaceAnalyzer.App</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Description>Read-only, offline logical drive space analysis.</Description>
+  </PropertyGroup>
+  <ItemGroup><ProjectReference Include="../DriveSpaceAnalyzer.Core/DriveSpaceAnalyzer.Core.csproj" /></ItemGroup>
+</Project>
