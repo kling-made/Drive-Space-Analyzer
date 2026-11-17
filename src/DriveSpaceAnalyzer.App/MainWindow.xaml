@@ -60,7 +60,7 @@
     </DockPanel>
     <Grid Grid.Row="1" Margin="0,7,0,6">
      <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-     <ProgressBar Value="{Binding Percent}" IsIndeterminate="{Binding Indeterminate}" Height="7" VerticalAlignment="Center" Foreground="#2458D3"/>
+     <ProgressBar Value="{Binding Percent, Mode=OneWay}" IsIndeterminate="{Binding Indeterminate}" Height="7" VerticalAlignment="Center" Foreground="#2458D3"/>
      <TextBlock Grid.Column="1" Text="{Binding Percentage}" Margin="12,0,0,0" Foreground="#52627A"/>
     </Grid>
     <TextBlock Grid.Row="2" Text="{Binding CurrentDirectory}" TextTrimming="CharacterEllipsis" ToolTip="{Binding CurrentDirectory}"/>

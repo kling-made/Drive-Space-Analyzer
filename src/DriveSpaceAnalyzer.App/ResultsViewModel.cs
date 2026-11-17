@@ -22,6 +22,9 @@ public sealed class ResultsViewModel : Observable, IDisposable
     public string FileSearch { get => fileSearch; set { if (Set(ref fileSearch, value)) ScheduleFilter(); } }
     public string Context { get => context; private set => Set(ref context, value); }
     public bool Loading { get => loading; private set => Set(ref loading, value); }
+    public FolderNode? LargestFolder { get; private set; }
+    public LargeFile? LargestFile { get; private set; }
+    public long LargeFileCount { get; private set; }
     public string FolderHint { get; private set; } = "All scanned folders · double-click to explore";
     public string FileHint { get; private set; } = "Files strictly greater than the scan threshold";
     public ResultsViewModel(IWindowNavigator navigator)
@@ -37,6 +40,8 @@ public sealed class ResultsViewModel : Observable, IDisposable
         {
             var data = await Task.Run(() => (Folders: ResultQuery.Folders(scan, directoryId), Files: ResultQuery.Files(scan, directoryId)));
             snapshot = scan;
+            LargestFolder = data.Folders.FirstOrDefault(); LargestFile = data.Files.FirstOrDefault();
+            LargeFileCount = data.Files.LongLength;
             folderView = MakeView(data.Folders, nameof(FolderNode.TotalBytes), item => item is FolderNode folder
                 && ResultQuery.Matches(folder.Name, folder.FullPath, FolderSearch));
             fileView = MakeView(data.Files, nameof(LargeFile.SizeBytes), item => item is LargeFile file

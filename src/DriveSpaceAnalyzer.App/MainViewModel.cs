@@ -110,11 +110,11 @@ public sealed class MainViewModel : Observable, IDisposable
             Status = snapshot.Status; Phase = snapshot.Status;
             Percent = snapshot.Outcome == ScanOutcome.Complete ? 100 : Math.Min(99.9, Percent);
             Indeterminate = false; Remaining = "Estimated remaining: —";
-            var largestFolder = ResultQuery.Folders(snapshot).FirstOrDefault();
-            var largestFile = ResultQuery.Files(snapshot).FirstOrDefault();
+            var largestFolder = Results.LargestFolder;
+            var largestFile = Results.LargestFile;
             Summary = $"Last scanned: {drive.Root}   ·   {drive.CapacityDescription}\n"
                 + $"{snapshot.FilesExamined:N0} files examined · {snapshot.Root?.FileCount ?? 0:N0} accounted files · {snapshot.DirectoriesProcessed:N0} folders processed (root included) · "
-                + $"{snapshot.LogicalBytes:N0} logical bytes ({SizeUnits.Format(snapshot.LogicalBytes)}) · {snapshot.GetLargeFiles().LongCount():N0} qualifying files\n"
+                + $"{snapshot.LogicalBytes:N0} logical bytes ({SizeUnits.Format(snapshot.LogicalBytes)}) · {Results.LargeFileCount:N0} qualifying files\n"
                 + $"Largest folder: {(largestFolder == null ? "—" : largestFolder.FullPath + " (" + SizeUnits.Format(largestFolder.TotalBytes) + ")")}\n"
                 + $"Largest qualifying file: {(largestFile == null ? "—" : largestFile.FullPath + " (" + SizeUnits.Format(largestFile.SizeBytes) + ")")}\n"
                 + $"Duration: {SizeUnits.Time(snapshot.Duration)} · Skipped/errors: {snapshot.Skipped:N0} · {snapshot.Status}";

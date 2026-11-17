@@ -28,6 +28,8 @@ public sealed class WindowTests
             {
                 var app = new DriveSpaceAnalyzer.App.App(); app.InitializeComponent();
                 app.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+                var dispatcherErrors = new List<Exception>();
+                app.DispatcherUnhandledException += (_, e) => { dispatcherErrors.Add(e.Exception); e.Handled = true; };
                 var fs = new CountingFileSystem(); var scanner = new ScanService(fs);
                 var provider = new TestDrives(root);
                 var navigator = new WindowNavigator();
@@ -44,6 +46,7 @@ public sealed class WindowTests
                     var invoker = (IInvokeProvider)new ButtonAutomationPeer(scanButton).GetPattern(PatternInterface.Invoke)!;
                     invoker.Invoke(); await Until(() => vm.Snapshot != null && !vm.IsScanning);
                     Assert.False(threadViolation); Assert.Equal(ScanOutcome.Complete, vm.Snapshot!.Outcome);
+                    Assert.Empty(dispatcherErrors);
                     Assert.Equal(100, vm.Percent);
                     Assert.Equal(new long[] { 40, 40, 10 }, vm.Results.FolderView.Cast<FolderNode>().Select(x => x.TotalBytes));
                     Assert.Equal(new long[] { 40, 10 }, vm.Results.FileView.Cast<LargeFile>().Select(x => x.SizeBytes));
@@ -86,6 +89,7 @@ public sealed class WindowTests
                     await slowTask;
                     Assert.Equal(ScanOutcome.Canceled, slow.Snapshot!.Outcome);
                     Assert.Contains("Canceled", slow.Status); Assert.True(slow.Percent < 100);
+                    Assert.Empty(dispatcherErrors);
                 }
                 finally
                 {
