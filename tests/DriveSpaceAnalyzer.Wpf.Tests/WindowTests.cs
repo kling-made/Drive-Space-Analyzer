@@ -27,7 +27,7 @@ public sealed class WindowTests
             await RunSta(async () =>
             {
                 var app = new DriveSpaceAnalyzer.App.App(); app.InitializeComponent();
-                app.StartupUri = null; app.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+                app.ShutdownMode = ShutdownMode.OnExplicitShutdown;
                 var fs = new CountingFileSystem(); var scanner = new ScanService(fs);
                 var provider = new TestDrives(root);
                 var navigator = new WindowNavigator();
